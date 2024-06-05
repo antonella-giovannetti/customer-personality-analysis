@@ -44,8 +44,12 @@ def drop_outliers(
                     (dataframe[column] >= first_quartile - step)
                     & (dataframe[column] <= third_quartile + step)
                 ),
-                column
+                column,
             ].index,
-            inplace=True
+            inplace=True,
         )
     return dataframe
+
+
+def scale_dataframe(dataframe: DataFrame) -> DataFrame:
+    return dataframe #TODO

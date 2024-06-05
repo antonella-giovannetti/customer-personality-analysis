@@ -12,9 +12,8 @@ pandas = "^2.2.2"
 seaborn = "^0.13.2"
 numpy = "^1.26.4"
 
-
 [tool.poetry.group.dev.dependencies]
-ipykernel = "^6.29.4"
+black = {version = "^24.4.2", extras = ["jupyter"]}
 
 [build-system]
 requires = ["poetry-core"]

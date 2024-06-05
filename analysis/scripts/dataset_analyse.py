@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple
 from IPython.display import display
 from matplotlib.pyplot import show
 from numpy import percentile
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from seaborn import histplot
 
 
@@ -22,6 +22,9 @@ def counter_columns(dataframe: DataFrame, columns: List[str]) -> None:
 
 def lowest_and_biggest_correlation(matrix: DataFrame) -> Tuple[int, int]:
     unstack_matrix = matrix.unstack()
+    if not isinstance(unstack_matrix, Series):
+        raise ValueError
+    
     print(f"The lowest correlation is {unstack_matrix.sort_values().iloc[0]}")
     index = 0
     while index < len(unstack_matrix):
@@ -44,11 +47,13 @@ def hisplot_columns(dataframe: DataFrame, columns: List[str]) -> None:
             show()
 
 
-def find_dataframe_outliers(dataframe: DataFrame, columns: List[str], percent: int = 75) -> List[List[Optional[int]]]:
+def find_dataframe_outliers(
+    dataframe: DataFrame, columns: List[str], percent: int = 75
+) -> List[List[Optional[int]]]:
     outliers = []
 
     for column in columns:
-        if dataframe[column].dtype not in ['int64', 'float64']:
+        if dataframe[column].dtype not in ["int64", "float64"]:
             continue
         first_quartile = percentile(dataframe[column], 100 - percent)
         third_quartile = percentile(dataframe[column], percent)
