@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Literal
 
+from numpy import percentile
 from pandas import DataFrame
 from sklearn.preprocessing import LabelEncoder
 
@@ -26,5 +27,25 @@ def label_encode_dataframe(dataframe: DataFrame, columns: List[str]) -> DataFram
         dataframe[column] = label_encoder.fit_transform(dataframe[column])
     return dataframe
 
-def drop_outliers(dataframe: DataFrame) -> DataFrame:
-    pass
+
+def drop_outliers(
+    dataframe: DataFrame, columns: List[str], percent: int = 75
+) -> DataFrame:
+    for column in columns:
+        if dataframe[column].dtype not in ["int64", "float64"]:
+            continue
+        first_quartile = percentile(dataframe[column], 100 - percent)
+        third_quartile = percentile(dataframe[column], percent)
+        step = 1.5 * (third_quartile - first_quartile)
+
+        dataframe.drop(
+            dataframe.loc[
+                ~(
+                    (dataframe[column] >= first_quartile - step)
+                    & (dataframe[column] <= third_quartile + step)
+                ),
+                column
+            ].index,
+            inplace=True
+        )
+    return dataframe

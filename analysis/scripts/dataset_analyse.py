@@ -38,20 +38,20 @@ def lowest_and_biggest_correlation(matrix: DataFrame) -> Tuple[int, int]:
 
 
 def hisplot_columns(dataframe: DataFrame, columns: List[str]) -> None:
-    for column in dataframe.columns:
+    for column in columns:
         if dataframe[column].dtype in ("int64", "float64"):
             histplot(data=dataframe, x=column)
             show()
 
 
-def find_dataframe_outliers(dataframe: DataFrame) -> List[List[Optional[int]]]:
+def find_dataframe_outliers(dataframe: DataFrame, columns: List[str], percent: int = 75) -> List[List[Optional[int]]]:
     outliers = []
 
-    for column in dataframe.columns:
+    for column in columns:
         if dataframe[column].dtype not in ['int64', 'float64']:
             continue
-        first_quartile = percentile(dataframe[column], 5)
-        third_quartile = percentile(dataframe[column], 95)
+        first_quartile = percentile(dataframe[column], 100 - percent)
+        third_quartile = percentile(dataframe[column], percent)
         step = 1.5 * (third_quartile - first_quartile)
 
         outliers_per_column = dataframe[
