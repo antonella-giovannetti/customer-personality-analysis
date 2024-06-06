@@ -1,12 +1,30 @@
 from datetime import datetime
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from numpy import percentile
 from pandas import DataFrame
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
+from .dataset_analyse import find_dataframe_outliers
+
 Period = Literal["Year", "Semester"]
 
+def _shared_matrix_value(matrix: List[List[Optional[int]]]) -> List[Optional[int]]:
+    counter_map = {}
+    list_shared_values = []
+
+    for row in matrix:
+        for value in row:
+            if value not in counter_map:
+                counter_map[value] = 0
+            else:
+                counter_map[value] = 1
+
+    for key, state in counter_map.items():
+        if state == 1:
+            list_shared_values.append(key)
+
+    return list_shared_values
 
 def binning_date_by_period(input_date: str, period: Period = "Semester") -> str:
     try:
@@ -34,7 +52,6 @@ def drop_outliers(
     """
     With Tukey's method to find outliers, we change quartile by input percentile & drop outliers
     """
-    # NOTE drop only outliers in many categories
     for column in columns:
         if dataframe[column].dtype not in ["int64", "float64"]:
             continue
@@ -54,6 +71,16 @@ def drop_outliers(
         )
     return dataframe
 
+
+def drop_shared_outliers(
+        dataframe: DataFrame, columns: List[str], percent: int = 75
+) -> DataFrame:
+    
+    all_outliers_indexes = find_dataframe_outliers(dataframe, columns, percent)
+    shared_outliers_indexes = _shared_matrix_value(all_outliers_indexes)
+    dataframe.drop([index for index in shared_outliers_indexes], inplace = True)
+    
+    return dataframe
 
 def scale_dataframe(dataframe: DataFrame) -> DataFrame:
     scaler = StandardScaler()

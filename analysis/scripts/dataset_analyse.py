@@ -1,10 +1,11 @@
 from collections import Counter
 from typing import List, Optional, Tuple
 from IPython.display import display
-from matplotlib.pyplot import show
-from numpy import percentile
+from matplotlib.pyplot import show, subplots
+from numpy import percentile, round
 from pandas import DataFrame, Series
 from seaborn import histplot
+from sklearn.decomposition import PCA
 
 
 def print_unique_values(dataframe: DataFrame, columns: List[str]) -> None:
@@ -15,7 +16,6 @@ def print_unique_values(dataframe: DataFrame, columns: List[str]) -> None:
 
 
 def counter_columns(dataframe: DataFrame, columns: List[str]) -> None:
-    """ """
     for column in columns:
         print(f"The counter of {column} is : {Counter(dataframe[column])}")
 
@@ -86,5 +86,19 @@ def find_dataframe_outliers(
     return outliers
 
 
-def pca_visualize(dataframe: DataFrame) -> None:
-    pass
+def pca_visualize(dataframe: DataFrame, pca: PCA) -> None:
+
+    n_dimensions = [f'Dimension {dimension}' for dimension in range(1, len(pca.components_)+1)]
+    components = DataFrame(round(pca.components_, 4), columns = list(dataframe.keys()))
+
+    ratios = pca.explained_variance_ratio_.reshape(len(pca.components_), 1)
+    variance_ratios = DataFrame(round(ratios, 4), columns = ['Explained Variance'])
+
+    fig, ax = subplots(figsize = (14,8))
+    components.plot(ax=ax, kind='bar')
+    ax.set_ylabel("Feature weights")
+    ax.set_xticklabels( n_dimensions, rotation=0)
+
+    for index, variance in enumerate(pca.explained_variance_ratio_):
+	    ax.text(index-0.40, ax.get_ylim()[1] + 0.05, "Explained Variance\n          %.4f"%(variance)) 
+    
