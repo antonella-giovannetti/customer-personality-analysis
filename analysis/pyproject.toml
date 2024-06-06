@@ -11,6 +11,7 @@ python = "^3.11"
 pandas = "^2.2.2"
 seaborn = "^0.13.2"
 numpy = "^1.26.4"
+matplotlib = "^3.9.0"
 
 [tool.poetry.group.dev.dependencies]
 black = {version = "^24.4.2", extras = ["jupyter"]}

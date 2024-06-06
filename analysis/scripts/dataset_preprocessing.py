@@ -3,7 +3,7 @@ from typing import List, Literal
 
 from numpy import percentile
 from pandas import DataFrame
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 Period = Literal["Year", "Semester"]
 
@@ -31,6 +31,10 @@ def label_encode_dataframe(dataframe: DataFrame, columns: List[str]) -> DataFram
 def drop_outliers(
     dataframe: DataFrame, columns: List[str], percent: int = 75
 ) -> DataFrame:
+    """
+    With Tukey's method to find outliers, we change quartile by input percentile & drop outliers
+    """
+    # NOTE drop only outliers in many categories
     for column in columns:
         if dataframe[column].dtype not in ["int64", "float64"]:
             continue
@@ -52,4 +56,11 @@ def drop_outliers(
 
 
 def scale_dataframe(dataframe: DataFrame) -> DataFrame:
-    return dataframe #TODO
+    scaler = StandardScaler()
+    numercial_columns = [
+        column
+        for column in dataframe.columns
+        if dataframe[column].dtype in ("int64", "float64")
+    ]
+    dataframe[numercial_columns] = scaler.fit_transform(dataframe[numercial_columns])
+    return dataframe

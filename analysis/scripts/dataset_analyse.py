@@ -24,7 +24,7 @@ def lowest_and_biggest_correlation(matrix: DataFrame) -> Tuple[int, int]:
     unstack_matrix = matrix.unstack()
     if not isinstance(unstack_matrix, Series):
         raise ValueError
-    
+
     print(f"The lowest correlation is {unstack_matrix.sort_values().iloc[0]}")
     index = 0
     while index < len(unstack_matrix):
@@ -50,6 +50,20 @@ def hisplot_columns(dataframe: DataFrame, columns: List[str]) -> None:
 def find_dataframe_outliers(
     dataframe: DataFrame, columns: List[str], percent: int = 75
 ) -> List[List[Optional[int]]]:
+    """
+    Tukey's method to identify outliers, with custom percentile (default is quartile):
+    The method detects outliers as 1.5 * the difference between the first and the third quartile.
+
+    Input :
+        dataframe, DataFrame: The dataset
+        columns, List[str] : The list of columns to detect outliers
+        percent, int = 75 : The third quartile percent (1-percent first quartile)
+    Output :
+        List[List[Optional[int]]] : The matrix of list of outliers' index
+    Mathematic expression :
+        - s = (3*(q3-q1)) / 2
+        - q3 + s > outliers or outliers < q1 - s
+    """
     outliers = []
 
     for column in columns:
@@ -70,3 +84,7 @@ def find_dataframe_outliers(
         lista = outliers_per_column.index.tolist()
         outliers.append(lista)
     return outliers
+
+
+def pca_visualize(dataframe: DataFrame) -> None:
+    pass
