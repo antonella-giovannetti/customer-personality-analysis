@@ -86,7 +86,7 @@ def find_dataframe_outliers(
     return outliers
 
 
-def pca_visualize(dataframe: DataFrame, pca: PCA) -> None:
+def pca_visualize_categories(dataframe: DataFrame, pca: PCA) -> None:
 
     n_dimensions = [f'Dimension {dimension}' for dimension in range(1, len(pca.components_)+1)]
     components = DataFrame(round(pca.components_, 4), columns = list(dataframe.keys()))
@@ -102,3 +102,26 @@ def pca_visualize(dataframe: DataFrame, pca: PCA) -> None:
     for index, variance in enumerate(pca.explained_variance_ratio_):
 	    ax.text(index-0.40, ax.get_ylim()[1] + 0.05, "Explained Variance\n          %.4f"%(variance)) 
     
+
+def biplot(good_data: DataFrame, reduced_data: DataFrame, pca: PCA) -> None:
+
+    _, ax = subplots(figsize = (14,8))   
+    ax.scatter(x=reduced_data.loc[:, 'principal_component_1'], y=reduced_data.loc[:, 'principal_component_2'], 
+        facecolors='b', edgecolors='b', s=70, alpha=0.5)
+    
+    feature_vectors = pca.components_.T
+
+    # we use scaling factors to make the arrows easier to see
+    arrow_size, text_pos = 7.0, 8.0,
+
+    # projections of the original features
+    for feature_index, vector in enumerate(feature_vectors):
+        ax.arrow(0, 0, arrow_size*vector[0], arrow_size*vector[1], 
+                  head_width=0.2, head_length=0.2, linewidth=2, color='red')
+        ax.text(vector[0]*text_pos, vector[1]*text_pos, good_data.columns[feature_index], color='black', 
+                 ha='center', va='center', fontsize=18)
+
+    ax.set_xlabel("principal_component_1", fontsize=14)
+    ax.set_ylabel("principal_component_2", fontsize=14)
+    ax.set_title("PC plane with original feature projections.", fontsize=16);
+    return ax
