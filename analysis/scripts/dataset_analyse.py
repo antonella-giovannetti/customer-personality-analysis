@@ -1,10 +1,11 @@
 from collections import Counter
 from typing import List, Optional, Tuple
 from IPython.display import display
-from matplotlib.pyplot import show, subplots
+from matplotlib.pyplot import plot, show, subplots, xlabel, xticks, ylabel
 from numpy import percentile, round
 from pandas import DataFrame, Series
 from seaborn import histplot
+from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
 
@@ -125,3 +126,17 @@ def biplot(good_data: DataFrame, reduced_data: DataFrame, pca: PCA) -> None:
     ax.set_ylabel("principal_component_2", fontsize=14)
     ax.set_title("PC plane with original feature projections.", fontsize=16);
     return ax
+
+
+def elbow_chart(dataframe: DataFrame) -> None:
+    sum_squared_error = []
+    for cluster in range(1, 10):
+        kmeans = KMeans(n_clusters=cluster,)
+        kmeans.fit(dataframe)
+        sum_squared_error.append(kmeans.inertia_)
+
+    plot(range(1, 10), sum_squared_error)
+    xticks(range(1, 11))
+    xlabel("Number of Clusters")
+    ylabel("SSE")
+    show()
