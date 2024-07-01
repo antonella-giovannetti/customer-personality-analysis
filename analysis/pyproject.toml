@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "analysis"
+version = "0.1.0"
+description = ""
+authors = ["alexandre-assad <alexandre.assad@laplateforme.io>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = "^2.2.2"
+seaborn = "^0.13.2"
+numpy = "^1.26.4"
+matplotlib = "^3.9.0"
+
+[tool.poetry.group.dev.dependencies]
+black = {version = "^24.4.2", extras = ["jupyter"]}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
