@@ -1,0 +1,91 @@
+[tool.poetry]
+name = "customer-personality-analysis"
+version = "0.1.0"
+description = "Clustering with customer analysis"
+authors = ["handriamaromanana <hugo.andriamaromanana@laplateforme.io>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^2.0.0"
+pandas = "^2.2.2"
+matplotlib = "^3.9.0"
+seaborn = "^0.13.2"
+loguru = "^0.7.2"
+icecream = "^2.1.3"
+ipython = "^8.26.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev]
+optional = true
+
+
+[tool.poetry.group.dev.dependencies]
+icecream = "*"
+
+[tool.poetry.group.ci.dependencies]
+black = { version = "*", allow-prereleases = true }
+isort = "*"
+ruff = "*"
+mypy = "*"
+# Stubs
+pandas-stubs = "*"
+types-pyyaml = "*"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "*"
+pytest-cov = "*"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = ">=7.2,<8"
+pydata-sphinx-theme = "*"
+sphinxcontrib-devhelp = "*"
+sphinxcontrib-applehelp = "*"
+sphinxcontrib-htmlhelp = "*"
+sphinxcontrib-jsmath = "*"
+sphinxcontrib-qthelp = "*"
+sphinxcontrib-serializinghtml = "*"
+sphinx-autodoc-typehints = "*"
+sphinx-autoapi = ">=3.0.0"
+sphinx-gallery = "*"
+sphinx-copybutton = "*"
+commonmark = "*"
+recommonmark = "*"
+m2r2 = "*"
+tabulate = "*"
+furo = "*"
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+exclude = ["docs", "archive"]
+lint.select = ["E", "F", "W", "C90", "I", "D", "UP", "PD", "PL"]
+lint.ignore = ["D104", "D107", "D205", "D415"]
+lint.pydocstyle.convention = "google"
+lint.pylint.max-args = 8
+lint.mccabe.max-complexity = 5
+
+[tool.mypy]
+files = ["analysis", "charts"]
+strict = true
+namespace_packages = true
+explicit_package_bases = true
+disallow_untyped_calls = false
+
+
+[[tool.mypy.overrides]]
+module = [
+    "smart_open.*",
+    "icecream.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "--cov=preparatron3000 --cov-report=html --cov-report term-missing --cov-fail-under=0"  # --cov-fail-under=100 to be achieved!
+testpaths = ["tests/"]
