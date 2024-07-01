@@ -1,18 +1,14 @@
 from collections import Counter
-from optparse import Option
 from typing import List, Optional, Tuple
 from IPython.display import display
 from matplotlib.pyplot import plot, show, subplots, xlabel, xticks, ylabel, suptitle
-import matplotlib.cm as cm
 from numpy import percentile, round, arange
 from pandas import DataFrame, Series
-from scipy.sparse import data
 from seaborn import histplot, boxenplot
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_samples, silhouette_score
 from sklearn.mixture import GaussianMixture
-
 
 
 def print_unique_values(dataframe: DataFrame, columns: List[str]) -> None:
@@ -95,24 +91,35 @@ def find_dataframe_outliers(
 
 def pca_visualize_categories(dataframe: DataFrame, pca: PCA) -> None:
 
-    n_dimensions = [f'Dimension {dimension}' for dimension in range(1, len(pca.components_)+1)]
-    components = DataFrame(round(pca.components_, 4), columns = list(dataframe.keys()))
+    n_dimensions = [
+        f"Dimension {dimension}" for dimension in range(1, len(pca.components_) + 1)
+    ]
+    components = DataFrame(round(pca.components_, 4), columns=list(dataframe.keys()))
 
     ratios = pca.explained_variance_ratio_.reshape(len(pca.components_), 1)
-    variance_ratios = DataFrame(round(ratios, 4), columns = ['Explained Variance'])
+    _ = DataFrame(round(ratios, 4), columns=["Explained Variance"])
 
-    fig, ax = subplots(figsize = (14,8))
-    components.plot(ax=ax, kind='bar')
+    fig, ax = subplots(figsize=(14, 8))
+    components.plot(ax=ax, kind="bar")
     ax.set_ylabel("Feature weights")
-    ax.set_xticklabels( n_dimensions, rotation=0)
+    ax.set_xticklabels(n_dimensions, rotation=0)
 
     for index, variance in enumerate(pca.explained_variance_ratio_):
-	    ax.text(index-0.40, ax.get_ylim()[1] + 0.05, "Explained Variance\n          %.4f"%(variance)) 
-    
+        ax.text(
+            index - 0.40,
+            ax.get_ylim()[1] + 0.05,
+            "Explained Variance\n          %.4f" % (variance),
+        )
 
-def biplot(reduced_dataframe: DataFrame, pca: Optional[PCA] = None, original_dataframe: Optional[DataFrame] = None, cluster_column: Optional[str] = None) -> None:
+
+def biplot(
+    reduced_dataframe: DataFrame,
+    pca: Optional[PCA] = None,
+    original_dataframe: Optional[DataFrame] = None,
+    cluster_column: Optional[str] = None,
+) -> None:
     """
-    Biplot is the scatter chart of the PCA. It has 3 pricipal modes : 
+    Biplot is the scatter chart of the PCA. It has 3 pricipal modes :
     - Basic scatter mode
     - Arrow with original features
     - different colors by clusters
@@ -122,36 +129,68 @@ def biplot(reduced_dataframe: DataFrame, pca: Optional[PCA] = None, original_dat
         original_dataframe, Optional[Dataframe] = None : The original dataframe, to get original features
         cluster_columns, Optional[str] = None : The name of the cluster column, to get different colors by clusters
     """
-    _, ax = subplots(figsize = (14,8))  
+    _, ax = subplots(figsize=(14, 8))
 
     if cluster_column:
-        ax.scatter(x=reduced_dataframe.loc[:, 'principal_component_1'], y=reduced_dataframe.loc[:, 'principal_component_2'], 
-            facecolors='b', edgecolors='b', s=70, alpha=0.5, c=reduced_dataframe[cluster_column])
+        ax.scatter(
+            x=reduced_dataframe.loc[:, "principal_component_1"],
+            y=reduced_dataframe.loc[:, "principal_component_2"],
+            facecolors="b",
+            edgecolors="b",
+            s=70,
+            alpha=0.5,
+            c=reduced_dataframe[cluster_column],
+        )
     else:
-        ax.scatter(x=reduced_dataframe.loc[:, 'principal_component_1'], y=reduced_dataframe.loc[:, 'principal_component_2'], 
-            facecolors='b', edgecolors='b', s=70, alpha=0.5)
-    
+        ax.scatter(
+            x=reduced_dataframe.loc[:, "principal_component_1"],
+            y=reduced_dataframe.loc[:, "principal_component_2"],
+            facecolors="b",
+            edgecolors="b",
+            s=70,
+            alpha=0.5,
+        )
+
     if original_dataframe is not None and pca is not None:
         feature_vectors = pca.components_.T
-        arrow_size, text_pos = 7.0, 8.0,
+        arrow_size, text_pos = (
+            7.0,
+            8.0,
+        )
 
         for feature_index, vector in enumerate(feature_vectors):
-            ax.arrow(0, 0, arrow_size*vector[0], arrow_size*vector[1], 
-                    head_width=0.2, head_length=0.2, linewidth=2, color='red')
-            ax.text(vector[0]*text_pos, vector[1]*text_pos, original_dataframe.columns[feature_index], color='black', 
-                    ha='center', va='center', fontsize=18)
-
+            ax.arrow(
+                0,
+                0,
+                arrow_size * vector[0],
+                arrow_size * vector[1],
+                head_width=0.2,
+                head_length=0.2,
+                linewidth=2,
+                color="red",
+            )
+            ax.text(
+                vector[0] * text_pos,
+                vector[1] * text_pos,
+                original_dataframe.columns[feature_index],
+                color="black",
+                ha="center",
+                va="center",
+                fontsize=18,
+            )
 
     ax.set_xlabel("principal_component_1", fontsize=14)
     ax.set_ylabel("principal_component_2", fontsize=14)
-    ax.set_title("PC plane with original feature projections.", fontsize=16);
+    ax.set_title("PC plane with original feature projections.", fontsize=16)
     return ax
 
 
 def elbow_chart(dataframe: DataFrame) -> None:
     sum_squared_error = []
     for cluster in range(1, 10):
-        kmeans = KMeans(n_clusters=cluster,)
+        kmeans = KMeans(
+            n_clusters=cluster,
+        )
         kmeans.fit(dataframe)
         sum_squared_error.append(kmeans.inertia_)
 
@@ -172,9 +211,9 @@ def number_clusters(dataframe: DataFrame, clusters: int = 7) -> None:
 
         score = silhouette_score(dataframe, predictions)
         scores[cluster] = score
-        print(cluster, ' : Silhouette score is: ' + str(score), '\n')
-    
-    print('All Scores : ' + str(scores))
+        print(cluster, " : Silhouette score is: " + str(score), "\n")
+
+    print("All Scores : " + str(scores))
 
 
 def boxplot(dataframe: DataFrame, cluster_column: str):
@@ -239,6 +278,6 @@ def silhouette_plot(dataframe: DataFrame, n_clusters: int) -> None:
         % n_clusters,
         fontsize=14,
         fontweight="bold",
-        )
+    )
 
     show()

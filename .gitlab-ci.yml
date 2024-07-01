@@ -1,0 +1,72 @@
+
+default:
+  image: $LOCAL_HOST
+  tags:
+    - cpu
+
+stages:
+  - pre
+  - test
+  - deploy
+
+.install:
+  before_script:
+    - pip config --global set global.index-url $PIP_INDEX_URL
+    - pip config --global set global.timeout $PIP_TMOUT
+    - pip install --upgrade pip setuptools
+    - poetry config virtualenvs.create false
+
+test:lint:
+  stage: test
+  extends: .install
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  script:
+    - poetry install --with ci,dev,test --all-extras
+    - poetry run black . --check
+    - poetry run ruff check .
+    - poetry run mypy
+
+test:pytest:
+  stage: test
+  extends: .install
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  script:
+    - poetry install --with ci,dev,test --all-extras
+    - poetry run pytest
+
+.pages:
+  extends: .install
+  script:
+    - poetry install --with dev,docs --all-extras
+    - poetry run sphinx-build -b html docs/source public -v
+
+test:pages:
+  stage: test
+  extends: .pages
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+pages:
+  stage: deploy
+  extends: .pages
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'develop'
+    - if: $CI_COMMIT_BRANCH == 'main'
+  allow_failure: true
+  artifacts:
+    paths:
+      - public
+
+publish:
+  stage: deploy
+  extends: .install
+  rules:
+    - if: $CI_COMMIT_TAG =~ $PUBLISH_TAG_TEMPLATE
+  script:
+      - poetry config repositories.pypi $PYPI_PUBLISH_URL
+      - poetry config http-basic.pypi "$(< nexus-user-gitlab)" "$(< nexus-user-password)"
+      - poetry version $CI_COMMIT_TAG
+      - poetry build
+      - poetry publish -r pypi

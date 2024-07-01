@@ -1,4 +1,5 @@
 from datetime import datetime
+import sys
 from typing import List, Literal, Optional
 
 from numpy import percentile
@@ -8,6 +9,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from .dataset_analyse import find_dataframe_outliers
 
 Period = Literal["Year", "Semester"]
+
 
 def _shared_matrix_value(matrix: List[List[Optional[int]]]) -> List[Optional[int]]:
     counter_map = {}
@@ -26,6 +28,7 @@ def _shared_matrix_value(matrix: List[List[Optional[int]]]) -> List[Optional[int
 
     return list_shared_values
 
+
 def binning_date_by_period(input_date: str, period: Period = "Semester") -> str:
     try:
         new_date = datetime.strptime(input_date, "%d-%m-%Y").date()
@@ -34,9 +37,13 @@ def binning_date_by_period(input_date: str, period: Period = "Semester") -> str:
         else:
             return new_date.replace(month=1, day=1).isoformat()
 
-    except:
-        print("Not date format")
+    except ValueError as e:
+        print(f"Not date format: {e}")
         return input_date
+
+    except Exception as e:
+        print(e)
+        sys.exit(0)
 
 
 def label_encode_dataframe(dataframe: DataFrame, columns: List[str]) -> DataFrame:
@@ -73,14 +80,15 @@ def drop_outliers(
 
 
 def drop_shared_outliers(
-        dataframe: DataFrame, columns: List[str], percent: int = 75
+    dataframe: DataFrame, columns: List[str], percent: int = 75
 ) -> DataFrame:
-    
+
     all_outliers_indexes = find_dataframe_outliers(dataframe, columns, percent)
     shared_outliers_indexes = _shared_matrix_value(all_outliers_indexes)
-    dataframe.drop([index for index in shared_outliers_indexes], inplace = True)
-    
+    dataframe.drop([index for index in shared_outliers_indexes], inplace=True)
+
     return dataframe
+
 
 def scale_dataframe(dataframe: DataFrame) -> DataFrame:
     scaler = StandardScaler()
