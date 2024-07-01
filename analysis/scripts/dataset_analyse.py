@@ -184,7 +184,7 @@ def boxplot(dataframe: DataFrame, cluster_column: str):
 
 
 def silhouette_plot(dataframe: DataFrame, n_clusters: int) -> None:
-    fig, (ax1, ax2) = subplots(1, 2)
+    fig, ax1 = subplots(1, 1)
     fig.set_size_inches(18, 7)
     ax1.set_xlim([-0.1, 1])
     ax1.set_ylim([0, len(dataframe) + (n_clusters + 1) * 10])
