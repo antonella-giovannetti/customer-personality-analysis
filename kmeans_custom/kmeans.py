@@ -47,12 +47,13 @@ class KMeansCustom:
                 nearest_centroid_index = np.argmin(distances)
                 values_per_nearest_centroid[nearest_centroid_index].append(datum)
             previous_centroids = self.centroids.copy()
-            self.centroids = np.array(
-                [np.mean(values, axis=0) for values in values_per_nearest_centroid]
-            )
-            for i, centroid in enumerate(self.centroids):
-                if np.isnan(centroid).any():
-                    self.centroids[i] = previous_centroids[i]
+            new_centroids = []
+            for values in values_per_nearest_centroid:
+                if len(values) > 0:
+                    new_centroids.append(np.mean(values, axis=0))
+                else:
+                    new_centroids.append(previous_centroids[len(new_centroids)])
+            self.centroids = np.array(new_centroids)
             iteration += 1
 
     def predict(self, data: np.ndarray) -> List[int]:
